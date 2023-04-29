@@ -1,2 +1,4 @@
-package com.han.community.entity;public class Post {
+package com.han.community.entity;
+
+public class Post {
 }

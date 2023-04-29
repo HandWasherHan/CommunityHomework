@@ -58,6 +58,7 @@ public class LoginController {
 //        OAuth2ResourceServerProperties.Jwt
 
         JwtBuilder jwtBuilder = Jwts.builder();
+        // TODO 将token存到redis里，以实现分布式一致性、并发幂等性
         String jwtToken = jwtBuilder.setHeaderParam(ALGORITHM_CLAIM, ALGORITHM_METHOD)
                 .claim(USER_Id, user.getId())
                 .claim(USER_NAME, user.getUsername())

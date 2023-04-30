@@ -2,8 +2,10 @@ package com.han.community.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.han.community.CommonValues;
+import com.han.community.entity.MyToken;
+import com.han.community.service.MyTokenService;
+import com.han.community.utils.UserValue;
 import com.han.community.entity.User;
-import com.han.community.mapper.UserMapper;
 import com.han.community.service.UserService;
 import com.han.community.utils.CommunityStringUtils;
 import com.han.community.utils.Response;
@@ -12,33 +14,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
+import java.util.Date;
 
 
 @Slf4j
 @RestController
 @RequestMapping("/user")
-public class LoginController {
-    private static final String SUCCESS_SIGN = "注册成功";
-    private static final String FAILURE_SIGN = "注册失败";
-    private static final String SUCCESS_LOGIN = "登录成功，欢迎您， ";
-    private static final String FAILURE_LOGIN = "登录失败，请检查用户名或密码是否正确";
-    private static final String REPEAT_NAME_SIGN = "用户名已存在";
-    private static final String ALGORITHM_CLAIM = "alg";
-    private static final String ALGORITHM_METHOD = "HS256";
-    private static final String USER_NAME = "username";
-    private static final String USER_PASSWORD = "password";
-    private static final String USER_Id = "id";
-    private static final String JWT_SIGN = "root";
-
+public class LoginController implements UserValue {
 
     @Autowired
     UserService userService;
 
-
+    @Autowired
+    MyTokenService myTokenService;
 
     @PostMapping("/sign")
-    public String doSign(@RequestBody User user) {
+    public String doSign(@RequestBody User user, boolean rememberMe) {
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 //        System.err.println(user.getUsername());
         lambdaQueryWrapper.eq(User::getUsername, user.getUsername());
@@ -57,14 +49,9 @@ public class LoginController {
         userService.save(user);
 //        OAuth2ResourceServerProperties.Jwt
 
-        JwtBuilder jwtBuilder = Jwts.builder();
-        // TODO 将token存到redis里，以实现分布式一致性、并发幂等性
-        String jwtToken = jwtBuilder.setHeaderParam(ALGORITHM_CLAIM, ALGORITHM_METHOD)
-                .claim(USER_Id, user.getId())
-                .claim(USER_NAME, user.getUsername())
-                .claim(USER_PASSWORD, user.getPassword())
-                .signWith(SignatureAlgorithm.HS256, JWT_SIGN)
-                .compact();
+        // TODO 将token存到redis里，以实现分布式一致性、并发幂等性，目前仅存入mysql中
+        String jwtToken = userService.loginService(user, rememberMe);
+
         Response<String> response = Response.success(SUCCESS_SIGN);
         response.setEntity(jwtToken);
         return response.toJson();
@@ -73,28 +60,28 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public String doLogin(@RequestBody User user, @RequestHeader("Token") String token) {
+    public String doLogin(@RequestBody User user, @RequestHeader("Token") String token, HttpSession httpSession, boolean rememberMe) {
         System.err.println(token);
         String id;
         String username;
         String password;
         String salt;
         if (token != null && !token.equals("")) {
-            JwtParser jwtParser = Jwts.parser();
-            jwtParser.setSigningKey(JWT_SIGN);
-            Jws<Claims> claimsJws = jwtParser.parseClaimsJws(token);
-            Claims body = claimsJws.getBody();
-            id = body.get(USER_Id, String.class);
-            username = body.get(USER_NAME, String.class);
-            password = body.get(USER_PASSWORD, String.class);
-            System.err.println(password);
+            LambdaQueryWrapper<MyToken> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(MyToken::getContent, token);
+            MyToken one = myTokenService.getOne(lambdaQueryWrapper);
+            if (one != null) {
+                LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                userLambdaQueryWrapper.eq(User::getId, one.getUserId());
+                User one1 = userService.getOne(userLambdaQueryWrapper);
+                username = one1.getUsername();
+                return Response.success(SUCCESS_LOGIN + username).toJson();
+            }
 
-        } else {
-            username = user.getUsername();
-            password = user.getPassword();
-            id = user.getId();
         }
-
+        username = user.getUsername();
+        password = user.getPassword();
+        id = user.getId();
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         if (id != null) {
             lambdaQueryWrapper.eq(User::getId, id);
@@ -102,12 +89,10 @@ public class LoginController {
             lambdaQueryWrapper.eq(User::getUsername, username);
         }
         User one = userService.getOne(lambdaQueryWrapper);
-        if (one == null) {
+        if (one == null || !password.equals(one.getPassword())) {
             return Response.fail(FAILURE_LOGIN).toJson();
         }
-        if (!password.equals(one.getPassword())) {
-            return Response.fail(FAILURE_LOGIN).toJson();
-        }
+        String jwtToken = userService.loginService(user, rememberMe);
         return Response.success(SUCCESS_LOGIN + username).toJson();
     }
 

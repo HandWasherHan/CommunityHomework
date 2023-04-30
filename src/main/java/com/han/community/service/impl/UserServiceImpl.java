@@ -31,6 +31,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public String loginService(User user,  boolean rememberMe) {
+//        System.err.println(user.getId());
         JwtBuilder jwtBuilder = Jwts.builder();
         String jwtToken = jwtBuilder.setHeaderParam(ALGORITHM_CLAIM, ALGORITHM_METHOD)
                 .claim(USER_Id, user.getId())

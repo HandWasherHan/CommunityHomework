@@ -19,4 +19,5 @@ public interface UserValue {
     public static final String UUID = "UUID";
     public static final long DEFAULT_EXPIRE_TIME = 1000 * 60 * 30;
     public static final long DEFAULT_ALIVE_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7;
+    public static final String USER_LOGIN_WITH_TOKEN = "该用户使用token登录";
 }

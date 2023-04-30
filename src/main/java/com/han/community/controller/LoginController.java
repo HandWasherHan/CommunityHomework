@@ -60,24 +60,23 @@ public class LoginController implements UserValue {
     }
 
     @PostMapping("/login")
-    public String doLogin(@RequestBody User user, @RequestHeader("Token") String token, HttpSession httpSession, boolean rememberMe) {
-        System.err.println(token);
+    public String doLogin(@RequestBody User user, HttpSession httpSession, boolean rememberMe) {
         String id;
         String username;
         String password;
         String salt;
-        if (token != null && !token.equals("")) {
-            LambdaQueryWrapper<MyToken> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.eq(MyToken::getContent, token);
-            MyToken one = myTokenService.getOne(lambdaQueryWrapper);
-            if (one != null) {
-                LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
-                userLambdaQueryWrapper.eq(User::getId, one.getUserId());
-                User one1 = userService.getOne(userLambdaQueryWrapper);
-                username = one1.getUsername();
+        String token = (String)httpSession.getAttribute("token");
+        id = myTokenService.getUserIdByToken(token);
+        if (id != null) {
+
+            LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            userLambdaQueryWrapper.eq(User::getId, id);
+            User one = userService.getOne(userLambdaQueryWrapper);
+            username = one.getUsername();
+            if (username.equals(user.getUsername())){
+                log.info(USER_LOGIN_WITH_TOKEN + token);
                 return Response.success(SUCCESS_LOGIN + username).toJson();
             }
-
         }
         username = user.getUsername();
         password = user.getPassword();
@@ -89,10 +88,17 @@ public class LoginController implements UserValue {
             lambdaQueryWrapper.eq(User::getUsername, username);
         }
         User one = userService.getOne(lambdaQueryWrapper);
-        if (one == null || !password.equals(one.getPassword())) {
+        if (one == null) {
             return Response.fail(FAILURE_LOGIN).toJson();
         }
-        String jwtToken = userService.loginService(user, rememberMe);
+        password = CommunityStringUtils.md5Digest(
+                CommunityStringUtils.md5Digest(password)
+                        + (one.getSalt() == null ? "" : one.getSalt()));// 兼容旧版本无salt的登录
+        if (!password.equals(one.getPassword())) {
+            return Response.fail(FAILURE_LOGIN).toJson();
+        }
+        String jwtToken = userService.loginService(one, rememberMe);
+        httpSession.setAttribute("token", jwtToken);
         return Response.success(SUCCESS_LOGIN + username).toJson();
     }
 

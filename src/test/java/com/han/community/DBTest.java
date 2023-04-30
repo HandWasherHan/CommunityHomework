@@ -16,8 +16,6 @@ public class DBTest {
     @Autowired
     UserMapper userMapper;
 
-    @Autowired
-    MyTokenMapper loginTicketMapper;
 
     @Test
     public void insertTest() {
@@ -28,14 +26,6 @@ public class DBTest {
 
     @Test
     public void ticketTest() {
-        MyToken loginTicket = new MyToken();
-        loginTicket.setTicket("hello");
-        loginTicket.setStatus(0);
-        loginTicket.setUserId("0");
-        Date date = new Date(System.currentTimeMillis());
-        loginTicket.setExpired(date);
-        loginTicketMapper.insert(loginTicket);
-        System.err.println(loginTicketMapper.selectById(1));
 
     }
 }

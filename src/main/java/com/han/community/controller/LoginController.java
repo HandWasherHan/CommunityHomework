@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.han.community.CommonValues;
 import com.han.community.entity.MyToken;
 import com.han.community.service.MyTokenService;
+import com.han.community.utils.HostHandler;
 import com.han.community.utils.UserValue;
 import com.han.community.entity.User;
 import com.han.community.service.UserService;
@@ -28,6 +29,9 @@ public class LoginController implements UserValue {
 
     @Autowired
     MyTokenService myTokenService;
+
+    @Autowired
+    HostHandler hostHandler;
 
     @PostMapping("/sign")
     public String doSign(@RequestBody User user, boolean rememberMe) {
@@ -75,6 +79,7 @@ public class LoginController implements UserValue {
             username = one.getUsername();
             if (username.equals(user.getUsername())){
                 log.info(USER_LOGIN_WITH_TOKEN + token);
+                httpSession.setAttribute(USER_NAME, user.getUsername());
                 return Response.success(SUCCESS_LOGIN + username).toJson();
             }
         }
@@ -99,7 +104,22 @@ public class LoginController implements UserValue {
         }
         String jwtToken = userService.loginService(one, rememberMe);
         httpSession.setAttribute("token", jwtToken);
+        httpSession.setAttribute(USER_NAME, user.getUsername());
         return Response.success(SUCCESS_LOGIN + username).toJson();
+    }
+
+    @GetMapping("/logout")
+    public String doLogOut(HttpSession httpSession) {
+        String username = (String)httpSession.getAttribute(USER_NAME);
+        if (username == null || username.equals("")) {
+            return Response.fail(UNKNOWN_FAILURE).toJson();
+        }
+        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(User::getUsername, username);
+        User one = userService.getOne(lambdaQueryWrapper);
+        myTokenService.removeById(one.getId());
+        httpSession.removeAttribute(USER_NAME);
+        return Response.success(LOG_OUT_SUCCESS).toJson();
     }
 
 }

@@ -16,7 +16,8 @@ public class Response<T> {
     public String toJson() {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            return objectMapper.writeValueAsString(this);
+            String str = objectMapper.writeValueAsString(this);
+            return str;
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

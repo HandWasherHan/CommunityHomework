@@ -1,8 +1,8 @@
 package com.han.community.utils;
 
 public interface UserValue {
-    public static final String SUCCESS_SIGN = "注册成功";
-    public static final String SUCCESS_LOGIN = "登录成功，欢迎您， ";
+    public static final String SUCCESS_SIGN = "success sign";
+    public static final String SUCCESS_LOGIN = "success login, welcome: ";
     public static final String FAILURE_SIGN = "注册失败";
     public static final String FAILURE_LOGIN = "登录失败，请检查用户名或密码是否正确";
     public static final String REPEAT_NAME_SIGN = "用户名已存在";
@@ -20,4 +20,8 @@ public interface UserValue {
     public static final long DEFAULT_EXPIRE_TIME = 1000 * 60 * 30;
     public static final long DEFAULT_ALIVE_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7;
     public static final String USER_LOGIN_WITH_TOKEN = "该用户使用token登录";
+    public static final String UNKNOWN_FAILURE = "未知错误";
+    public static final String LOG_OUT_SUCCESS = "成功退出";
+
+
 }

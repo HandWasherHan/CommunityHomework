@@ -28,8 +28,8 @@ public class HostHandler {
 
     public void add(User user) {
         threadLocal.set(user);
-        log.info("new user set in threadlocal:" + user.getUsername());
-        log.info(threadLocal.get().toString());
+        log.info("new user set in threadlocal: " + user.getUsername());
+//        log.info(threadLocal.get().toString());
 //        log.debug(threadLocal.get());
 
     }

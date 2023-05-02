@@ -2,11 +2,11 @@ package com.han.community.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
 
     @TableId(type = IdType.AUTO)
@@ -15,4 +15,5 @@ public class User {
     private String password;
     private int status = 0;
     private String salt;
+
 }

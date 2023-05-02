@@ -80,6 +80,7 @@ public class LoginController implements UserValue {
             if (username.equals(user.getUsername())){
                 log.info(USER_LOGIN_WITH_TOKEN + token);
                 httpSession.setAttribute(USER_NAME, user.getUsername());
+                httpSession.setAttribute(USER_Id, one.getId());
                 return Response.success(SUCCESS_LOGIN + username).toJson();
             }
         }
@@ -105,10 +106,11 @@ public class LoginController implements UserValue {
         String jwtToken = userService.loginService(one, rememberMe);
         httpSession.setAttribute("token", jwtToken);
         httpSession.setAttribute(USER_NAME, user.getUsername());
+        httpSession.setAttribute(USER_Id, one.getId());
         return Response.success(SUCCESS_LOGIN + username).toJson();
     }
 
-    @GetMapping("/logout")
+    @GetMapping(value = "/logout")
     public String doLogOut(HttpSession httpSession) {
         String username = (String)httpSession.getAttribute(USER_NAME);
         if (username == null || username.equals("")) {
@@ -119,6 +121,7 @@ public class LoginController implements UserValue {
         User one = userService.getOne(lambdaQueryWrapper);
         myTokenService.removeById(one.getId());
         httpSession.removeAttribute(USER_NAME);
+        httpSession.removeAttribute(USER_Id);
         return Response.success(LOG_OUT_SUCCESS).toJson();
     }
 

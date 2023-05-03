@@ -6,20 +6,18 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.han.community.entity.Post;
 import com.han.community.entity.User;
 import com.han.community.mapper.PostMapper;
+import com.han.community.service.CommentService;
 import com.han.community.service.PostService;
 import com.han.community.service.UserService;
 import com.han.community.utils.CommunityStringUtils;
 import com.han.community.utils.HostHandler;
 import com.han.community.utils.Response;
 import com.han.community.utils.UserStatus;
-import javafx.geometry.Pos;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.HtmlUtils;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,6 +40,9 @@ public class PostController {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    CommentService commentService;
 
     @PostMapping("/add")
     public String addPost(@RequestBody Post post) {
@@ -81,23 +82,21 @@ public class PostController {
 
     @GetMapping("/get/{postId}")
     public String getPostDetailById(@PathVariable String postId) {
-        LambdaQueryWrapper<Post> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(Post::getId, postId);
-        Post one = postService.getOne(lambdaQueryWrapper);
+        Post one = postService.getPostById(postId);
         Response<Map> response = new Response<>();
-        LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        userLambdaQueryWrapper.eq(User::getId, one.getUserId());
-        User userOne = userService.getOne(userLambdaQueryWrapper);
+        User userOne = userService.getUserById(one.getUserId());
         response.setEntity(new ConcurrentHashMap<String, Object>());
+        response.getEntity().put("post", one);
+        List commentByPostId = commentService.getCommentsByPostId(postId);
+        response.getEntity().put("comments", commentByPostId);
         if (!(userOne == null)){
             response.getEntity().put("user name", userOne.getUsername());
         } else {
             response.getEntity().put("user name", "未知用户");
         }
-
-        response.getEntity().put("post", one);
-        return CommunityStringUtils.getJson(response.getEntity());
+        return CommunityStringUtils.getJson(response);
     }
+
 
     @PostMapping("/comment/{postId}")
     public String addCommentToPostByPostId(@PathVariable(name = "postId") String postId) {

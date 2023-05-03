@@ -48,4 +48,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         myTokenService.save(myToken);
         return jwtToken;
     }
+
+    @Override
+    public User getUserById(String id) {
+        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(User::getId, id);
+        return getOne(lambdaQueryWrapper);
+
+    }
+
+    @Override
+    public User getUserByName(String name) {
+        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+//        System.err.println(user.getUsername());
+        lambdaQueryWrapper.eq(User::getUsername, name);
+        return getOne(lambdaQueryWrapper);
+    }
 }

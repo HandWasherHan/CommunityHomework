@@ -1,5 +1,6 @@
 package com.han.community.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.han.community.entity.Post;
@@ -17,4 +18,12 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
         Post one = getOne(lambdaQueryWrapper);
         return one;
     }
+
+    @Override
+    public void postCommentIncrease(Post post, Wrapper wrapper) {
+        post.setCommentCount(post.getCommentCount() + 1);
+        update(post, null);
+    }
+
+
 }

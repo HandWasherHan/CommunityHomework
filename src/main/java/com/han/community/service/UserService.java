@@ -9,4 +9,8 @@ public interface UserService extends IService<User> {
 
 
     String loginService(User user,  boolean rememberMe);
+
+    User getUserById(String id);
+
+    User getUserByName(String name);
 }

@@ -34,6 +34,7 @@ public class MvcConfiguration extends WebMvcConfigurationSupport {
         registry.addInterceptor(loginInterceptor)
                 .addPathPatterns("/user")
                 .addPathPatterns("/post/add")
+                .addPathPatterns("/comment/add/**")
 //                .addPathPatterns("use")
                 .excludePathPatterns("/user/login")
                 .excludePathPatterns("/user/sign_in");

@@ -13,8 +13,10 @@ import com.han.community.utils.Response;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.Date;
 
@@ -34,25 +36,17 @@ public class LoginController implements UserValue {
     HostHandler hostHandler;
 
     @PostMapping("/sign")
-    public String doSign(@RequestBody User user, boolean rememberMe) {
-        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-//        System.err.println(user.getUsername());
-        lambdaQueryWrapper.eq(User::getUsername, user.getUsername());
-        User one = userService.getOne(lambdaQueryWrapper);
+    public String doSign(@RequestBody User user, @PathVariable(required = false) boolean rememberMe) {
+        User one = userService.getUserByName(user.getUsername());
         if (one != null) {
             return Response.fail(REPEAT_NAME_SIGN).toJson();
         }
         String salt = CommunityStringUtils.generateUUID(CommonValues.DEFAULT_SALT_LENGTH);
-
-//        System.err.println(salt);
         String password = CommunityStringUtils.md5Digest(
                 CommunityStringUtils.md5Digest(user.getPassword()) + salt);
-//        System.err.println("password" + password);
         user.setSalt(salt);
         user.setPassword(password);
         userService.save(user);
-//        OAuth2ResourceServerProperties.Jwt
-
         // TODO 将token存到redis里，以实现分布式一致性、并发幂等性，目前仅存入mysql中
         String jwtToken = userService.loginService(user, rememberMe);
 
@@ -64,36 +58,37 @@ public class LoginController implements UserValue {
     }
 
     @PostMapping("/login")
-    public String doLogin(@RequestBody User user, HttpSession httpSession, boolean rememberMe) {
+    public String doLogin(@RequestBody User user, HttpSession httpSession, HttpServletRequest request,
+                          @PathVariable(required = false) boolean rememberMe) {
         String id;
         String username;
         String password;
-        String salt;
-        String token = (String)httpSession.getAttribute("token");
-        id = myTokenService.getUserIdByToken(token);
-        if (id != null) {
-
-            LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            userLambdaQueryWrapper.eq(User::getId, id);
-            User one = userService.getOne(userLambdaQueryWrapper);
-            username = one.getUsername();
-            if (username.equals(user.getUsername())){
-                log.info(USER_LOGIN_WITH_TOKEN + token);
-                httpSession.setAttribute(USER_NAME, user.getUsername());
-                httpSession.setAttribute(USER_Id, one.getId());
-                return Response.success(SUCCESS_LOGIN + username).toJson();
+        String token = request.getHeader("Authorization");
+        if (token != null) {
+            token = token.substring(7);
+            id = myTokenService.getUserIdByToken(token);
+            if (id == null) {
+                return Response.success(FAILURE_LOGIN).toJson();
             }
+            User one = userService.getUserById(id);
+            if (one == null) {
+                return Response.success(FAILURE_LOGIN).toJson();
+            }
+            username = one.getUsername();
+            log.info(USER_LOGIN_WITH_TOKEN + token);
+            httpSession.setAttribute(USER_NAME, user.getUsername());
+            httpSession.setAttribute(USER_Id, one.getId());
+            return Response.success(SUCCESS_LOGIN + username).toJson();
         }
         username = user.getUsername();
         password = user.getPassword();
         id = user.getId();
-        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        User one;
         if (id != null) {
-            lambdaQueryWrapper.eq(User::getId, id);
+            one = userService.getUserById(user.getId());
         } else {
-            lambdaQueryWrapper.eq(User::getUsername, username);
+            one = userService.getUserByName(user.getUsername());
         }
-        User one = userService.getOne(lambdaQueryWrapper);
         if (one == null) {
             return Response.fail(FAILURE_LOGIN).toJson();
         }
@@ -107,7 +102,9 @@ public class LoginController implements UserValue {
         httpSession.setAttribute("token", jwtToken);
         httpSession.setAttribute(USER_NAME, user.getUsername());
         httpSession.setAttribute(USER_Id, one.getId());
-        return Response.success(SUCCESS_LOGIN + username).toJson();
+        Response<String> response = Response.success(SUCCESS_LOGIN + username);
+        response.setEntity(jwtToken);
+        return response.toJson();
     }
 
     @GetMapping(value = "/logout")

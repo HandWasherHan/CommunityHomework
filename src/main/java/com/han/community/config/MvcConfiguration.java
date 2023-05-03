@@ -1,5 +1,6 @@
 package com.han.community.config;
 
+import com.han.community.handler.AdminInterceptor;
 import com.han.community.handler.LoginInterceptor;
 import com.han.community.handler.UserInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class MvcConfiguration extends WebMvcConfigurationSupport {
     @Autowired
     LoginInterceptor loginInterceptor;
 
+    @Autowired
+    AdminInterceptor adminInterceptor;
+
 //    @Override
 //    protected void addResourceHandlers(ResourceHandlerRegistry registry) {
 //        registry.addResourceHandler("/**").addResourceLocations()
@@ -31,10 +35,15 @@ public class MvcConfiguration extends WebMvcConfigurationSupport {
     protected void addInterceptors(InterceptorRegistry registry) {
 //        userInterceptor.
 //        registry.addInterceptor(userInterceptor).addPathPatterns("/user");
+        registry.addInterceptor(adminInterceptor)
+                .addPathPatterns("/**/ban/**")
+                .addPathPatterns("/**/delete/**")
+                .addPathPatterns("/user/sign/admin");
         registry.addInterceptor(loginInterceptor)
                 .addPathPatterns("/user")
                 .addPathPatterns("/post/add")
                 .addPathPatterns("/comment/add/**")
+                .addPathPatterns("/user/info/alter")
 //                .addPathPatterns("use")
                 .excludePathPatterns("/user/login")
                 .excludePathPatterns("/user/sign_in");

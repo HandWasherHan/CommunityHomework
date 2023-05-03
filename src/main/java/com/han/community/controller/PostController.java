@@ -12,7 +12,7 @@ import com.han.community.service.UserService;
 import com.han.community.utils.CommunityStringUtils;
 import com.han.community.utils.HostHandler;
 import com.han.community.utils.Response;
-import com.han.community.utils.UserStatus;
+import com.han.community.utils.CheckUserStatusUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.HtmlUtils;
@@ -49,12 +49,12 @@ public class PostController {
         post.setDate(new Date());
         User user = hostHandler.get();
         if (user == null) {
-//            Response response;
             return Response.fail(403, "未登录，无权发帖").toJson();
         }
         String id = user.getId();
-        if (user.getStatus() != UserStatus.NORMAL.getCode()) {
-            return Response.fail(403, "账号异常").toJson();
+        Response response = new Response<>();
+        if (!CheckUserStatusUtils.checkByUser(user, response)) {
+            return response.toJson();
         }
         post.setTitle(HtmlUtils.htmlEscape(post.getTitle()));
         post.setContent(HtmlUtils.htmlEscape(post.getContent()));

@@ -64,4 +64,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         lambdaQueryWrapper.eq(User::getUsername, name);
         return getOne(lambdaQueryWrapper);
     }
+
+    @Override
+    public void alterUserById(String id, User user) {
+        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(User::getId, id);
+        update(user, lambdaQueryWrapper);
+    }
 }

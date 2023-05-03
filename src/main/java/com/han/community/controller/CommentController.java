@@ -5,7 +5,9 @@ import com.han.community.entity.Post;
 import com.han.community.entity.User;
 import com.han.community.service.CommentService;
 import com.han.community.service.PostService;
+import com.han.community.utils.CheckUserStatusUtils;
 import com.han.community.utils.HostHandler;
+import com.han.community.utils.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -28,6 +30,11 @@ public class CommentController {
     @PostMapping("/add/{postId}")
     public String addCommentToPostByPostId(@PathVariable("postId") String postId, @RequestBody Comment comment) {
         User user = hostHandler.get();
+        Response<Object> response = new Response<>();
+        response.setMessage("ha");
+        if (!CheckUserStatusUtils.checkByUser(user, response)) {
+            return response.toJson();
+        }
         comment.setPostId(postId);
         comment.setUserId(user.getId());
         Post postById = postService.getPostById(postId);

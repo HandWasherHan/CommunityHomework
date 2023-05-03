@@ -3,6 +3,8 @@ package com.han.community.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.han.community.CommonValues;
 import com.han.community.entity.MyToken;
+import com.han.community.entity.enums.LoginMessage;
+import com.han.community.entity.enums.UserStatus;
 import com.han.community.service.MyTokenService;
 import com.han.community.utils.HostHandler;
 import com.han.community.utils.UserValue;
@@ -57,6 +59,14 @@ public class LoginController implements UserValue {
 
     }
 
+    @PostMapping("/sign/admin")
+    public String doSignAdmin(@RequestBody User user, @PathVariable(required = false) boolean rememberMe) {
+
+        user.setStatus(3);
+        return doSign(user, rememberMe);
+
+    }
+
     @PostMapping("/login")
     public String doLogin(@RequestBody User user, HttpSession httpSession, HttpServletRequest request,
                           @PathVariable(required = false) boolean rememberMe) {
@@ -92,6 +102,7 @@ public class LoginController implements UserValue {
         if (one == null) {
             return Response.fail(FAILURE_LOGIN).toJson();
         }
+//        log.info("password: " + password + " after digested: " + CommunityStringUtils.md5Digest(password));
         password = CommunityStringUtils.md5Digest(
                 CommunityStringUtils.md5Digest(password)
                         + (one.getSalt() == null ? "" : one.getSalt()));// 兼容旧版本无salt的登录
@@ -102,7 +113,18 @@ public class LoginController implements UserValue {
         httpSession.setAttribute("token", jwtToken);
         httpSession.setAttribute(USER_NAME, user.getUsername());
         httpSession.setAttribute(USER_Id, one.getId());
-        Response<String> response = Response.success(SUCCESS_LOGIN + username);
+        Response<String> response;
+        int status = one.getStatus();
+        if (status == UserStatus.DELETED.getCode()) {
+            response = Response.fail(403, LoginMessage.DELETED.getMessage());
+            return response.toJson();
+        }
+        if (status == UserStatus.ADMIN.getCode()) {
+            response = Response.success(LoginMessage.ADMIN_SUCCESS + username);
+        } else {
+            response = Response.success(SUCCESS_LOGIN + username);
+        }
+
         response.setEntity(jwtToken);
         return response.toJson();
     }

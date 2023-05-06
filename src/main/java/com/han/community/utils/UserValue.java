@@ -22,6 +22,11 @@ public interface UserValue {
     public static final String USER_LOGIN_WITH_TOKEN = "该用户使用token登录";
     public static final String UNKNOWN_FAILURE = "未知错误";
     public static final String LOG_OUT_SUCCESS = "成功退出";
+    public static final String NO_ENOUGH_INFO = "用户信息不全";
+    public static final String SUCCESS_VERIFICATION_CODE_SEND = "验证码成功发送";
+    public static final String FAILURE_VERIFICATION = "验证码错误";
+
+
 
 
 }

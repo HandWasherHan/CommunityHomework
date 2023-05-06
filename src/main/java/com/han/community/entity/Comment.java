@@ -16,8 +16,10 @@ public class Comment {
     private String userId;
     private String postId;
     private String content;
+    private String replyCommentId;
     private int type;
     private int status;
     private String replyUserId;
     private Date date;
+    private int replyTargetType;
 }

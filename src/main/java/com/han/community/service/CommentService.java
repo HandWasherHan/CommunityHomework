@@ -9,4 +9,6 @@ import java.util.List;
 public interface CommentService extends IService<Comment> {
 
     List getCommentsByPostId(String postId);
+
+    Comment getCommentById(String id);
 }

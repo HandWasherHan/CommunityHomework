@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.han.community.entity.User;
-import com.sun.corba.se.spi.ior.iiop.IIOPProfileTemplate;
 import org.springframework.util.DigestUtils;
 
 import java.text.SimpleDateFormat;

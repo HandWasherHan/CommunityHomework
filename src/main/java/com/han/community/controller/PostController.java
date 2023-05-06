@@ -3,20 +3,20 @@ package com.han.community.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.han.community.entity.Comment;
 import com.han.community.entity.Post;
 import com.han.community.entity.User;
+import com.han.community.entity.enums.CommentTargetType;
 import com.han.community.mapper.PostMapper;
 import com.han.community.service.CommentService;
 import com.han.community.service.PostService;
 import com.han.community.service.UserService;
-import com.han.community.utils.CommunityStringUtils;
-import com.han.community.utils.HostHandler;
-import com.han.community.utils.Response;
-import com.han.community.utils.CheckUserStatusUtils;
+import com.han.community.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.HtmlUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -87,8 +87,26 @@ public class PostController {
         User userOne = userService.getUserById(one.getUserId());
         response.setEntity(new ConcurrentHashMap<String, Object>());
         response.getEntity().put("post", one);
-        List commentByPostId = commentService.getCommentsByPostId(postId);
-        response.getEntity().put("comments", commentByPostId);
+        List<Comment> commentByPostId = commentService.getCommentsByPostId(postId);
+        Map<String, CommentWrapper> commentListMap = new ConcurrentHashMap<>();
+        for (Comment comment:
+             commentByPostId) {
+            if (comment.getReplyTargetType() == CommentTargetType.POST.getType()) {
+                System.err.println(comment.getContent());
+                List<Comment> commentToPostList = new ArrayList<>();
+                CommentWrapper commentWrapper = new CommentWrapper(comment, new ArrayList<Comment>());
+                commentListMap.put(comment.getId(), commentWrapper);
+            }
+        }
+        for (Comment comment:
+             commentByPostId) {
+            if (comment.getReplyTargetType() == CommentTargetType.COMMENT.getType()) {
+                commentListMap.get(comment.getReplyCommentId())
+                        .getReplyList()
+                        .add(comment);
+            }
+        }
+        response.getEntity().put("comments", commentListMap);
         if (!(userOne == null)){
             response.getEntity().put("user name", userOne.getUsername());
         } else {

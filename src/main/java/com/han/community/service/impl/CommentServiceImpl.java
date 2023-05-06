@@ -23,4 +23,12 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         List<Comment> comments = commentMapper.selectList(listLambdaQueryWrapper);
         return comments;
     }
+
+    @Override
+    public Comment getCommentById(String id) {
+        LambdaQueryWrapper<Comment> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(Comment::getId, id);
+        Comment comment = getOne(lambdaQueryWrapper);
+        return comment;
+    }
 }

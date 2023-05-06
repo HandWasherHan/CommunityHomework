@@ -15,5 +15,6 @@ public class User {
     private String password;
     private int status = 0;
     private String salt;
+    private String mail;
 
 }

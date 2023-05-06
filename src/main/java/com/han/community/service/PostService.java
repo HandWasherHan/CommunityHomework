@@ -10,5 +10,5 @@ public interface PostService extends IService<Post> {
 
     void postCommentIncrease(Post post, Wrapper wrapper);
 
-
+    void postCommentIncrease(Post post);
 }

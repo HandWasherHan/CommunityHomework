@@ -22,6 +22,12 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
     @Override
     public void postCommentIncrease(Post post, Wrapper wrapper) {
         post.setCommentCount(post.getCommentCount() + 1);
+        update(post, wrapper);
+    }
+
+    @Override
+    public void postCommentIncrease(Post post) {
+        post.setCommentCount(post.getCommentCount() + 1);
         update(post, null);
     }
 

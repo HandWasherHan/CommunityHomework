@@ -44,6 +44,7 @@ public class MvcConfiguration extends WebMvcConfigurationSupport {
                 .addPathPatterns("/post/add")
                 .addPathPatterns("/comment/add/**")
                 .addPathPatterns("/user/info/alter")
+                .addPathPatterns("/**/add-to-comment/**")
 //                .addPathPatterns("use")
                 .excludePathPatterns("/user/login")
                 .excludePathPatterns("/user/sign_in");

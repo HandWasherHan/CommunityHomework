@@ -9,6 +9,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
 import java.nio.charset.StandardCharsets;
@@ -26,10 +27,15 @@ public class MvcConfiguration extends WebMvcConfigurationSupport {
     @Autowired
     AdminInterceptor adminInterceptor;
 
-//    @Override
-//    protected void addResourceHandlers(ResourceHandlerRegistry registry) {
-//        registry.addResourceHandler("/**").addResourceLocations()
-//    }
+    /**
+     * 静态资源映射，只要继承了WebMvcConfigurationSupport并且有@Configuration注解的mvc配置类，都必须重新设置映射
+     * @param registry
+     */
+    @Override
+    protected void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/**")
+                .addResourceLocations("classpath:/static/");
+    }
 
     @Override
     protected void addInterceptors(InterceptorRegistry registry) {

@@ -42,6 +42,7 @@ public class CommentController {
         Post postById = postService.getPostById(postId);
         String userId = postById.getUserId();
         comment.setReplyUserId(userId);
+        comment.setFloorNum(postById.getFloorCount() + 1);
         comment.setDate(new Date());
         postService.postCommentIncrease(postById, null);
         commentService.save(comment);
@@ -63,6 +64,7 @@ public class CommentController {
         comment.setReplyCommentId(commentId);
         comment.setPostId(postId);
         comment.setUserId(user.getId());
+        comment.setFloorNum(commentById.getFloorNum());
         postService.postCommentIncrease(postService.getPostById(postId));
         commentService.save(comment);
         return Response.success(OperationValues.OPERATION_SUCCESS).toJson();

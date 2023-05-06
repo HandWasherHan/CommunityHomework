@@ -31,5 +31,11 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
         update(post, null);
     }
 
+    @Override
+    public void postFloorIncrease(Post post) {
+        post.setFloorCount(post.getFloorCount() + 1);
+        update(post, null);
+    }
+
 
 }

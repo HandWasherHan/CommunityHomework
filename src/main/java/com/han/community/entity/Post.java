@@ -24,6 +24,7 @@ public class Post {
 //    @JsonFormat(pattern="yyyy-MM-dd mm:hh:ss",timezone="GMT+8")
     private Date date;
     private int commentCount;
+    private int floorCount;
 
     public String toJson() {
         ObjectMapper objectMapper = new ObjectMapper();

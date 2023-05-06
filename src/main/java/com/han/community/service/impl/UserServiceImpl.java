@@ -3,6 +3,7 @@ package com.han.community.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.han.community.CommonValues;
+import com.han.community.entity.Comment;
 import com.han.community.entity.MyToken;
 import com.han.community.entity.User;
 import com.han.community.mapper.UserMapper;
@@ -16,8 +17,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -70,5 +70,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(User::getId, id);
         update(user, lambdaQueryWrapper);
+    }
+
+    @Override
+    public Map<String, User> readUserInCommentList(List<Comment> commentList) {
+        Map<String, User> userMap = new ConcurrentHashMap<>();
+        for (Comment comment:
+             commentList) {
+            User user =  new User();
+            user.setId(getUserById(comment.getUserId()).getId());
+            user.setUsername(getUserById(comment.getUserId()).getUsername());
+            userMap.put(user.getId(), user);
+        }
+        return userMap;
     }
 }

@@ -88,22 +88,28 @@ public class PostController {
         response.setEntity(new ConcurrentHashMap<String, Object>());
         response.getEntity().put("post", one);
         List<Comment> commentByPostId = commentService.getCommentsByPostId(postId);
-        Map<String, CommentWrapper> commentListMap = new ConcurrentHashMap<>();
+        Map<Integer, CommentWrapper> commentListMap = new ConcurrentHashMap<>();
+        Map<String, User> userMap = userService.readUserInCommentList(commentByPostId);
         for (Comment comment:
              commentByPostId) {
+            if (comment.getStatus() != 0) {
+                continue;
+            }
             if (comment.getReplyTargetType() == CommentTargetType.POST.getType()) {
-                System.err.println(comment.getContent());
-                List<Comment> commentToPostList = new ArrayList<>();
-                CommentWrapper commentWrapper = new CommentWrapper(comment, new ArrayList<Comment>());
-                commentListMap.put(comment.getId(), commentWrapper);
+                CommentWrapper commentWrapper = new CommentWrapper(comment, new ArrayList<CommentWrapper>());
+                commentListMap.put(comment.getFloorNum(), commentWrapper);
+                commentWrapper.setPublisher(userMap.get(comment.getUserId()));
             }
         }
         for (Comment comment:
              commentByPostId) {
             if (comment.getReplyTargetType() == CommentTargetType.COMMENT.getType()) {
-                commentListMap.get(comment.getReplyCommentId())
+                if (commentListMap.get(comment.getFloorNum()) == null) {
+                    continue;
+                }
+                commentListMap.get(comment.getFloorNum())
                         .getReplyList()
-                        .add(comment);
+                        .add(new CommentWrapper(comment, userMap.get(comment.getUserId()), null));
             }
         }
         response.getEntity().put("comments", commentListMap);
@@ -116,12 +122,6 @@ public class PostController {
     }
 
 
-    @PostMapping("/comment/{postId}")
-    public String addCommentToPostByPostId(@PathVariable(name = "postId") String postId) {
-        Post post = postService.getPostById(postId);
-        post.setCommentCount(post.getCommentCount() + 1);
-        return null;
-    }
 
 
 }

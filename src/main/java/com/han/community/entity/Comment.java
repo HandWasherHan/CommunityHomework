@@ -22,4 +22,5 @@ public class Comment {
     private String replyUserId;
     private Date date;
     private int replyTargetType;
+    private int floorNum;
 }

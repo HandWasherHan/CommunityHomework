@@ -32,7 +32,13 @@ public class LoginController implements UserValue {
     @Autowired
     MyMailSender mailSender;
 
-
+    @PostMapping("/try")
+    public String tryLogin(String email, String password, HttpSession httpSession, HttpServletRequest request) {
+        User user = new User();
+        user.setUsername("han");
+        user.setPassword(password);
+        return doLogin(user, httpSession, request, false);
+    }
 
     @PostMapping("/login")
     public String doLogin(@RequestBody User user, HttpSession httpSession, HttpServletRequest request,

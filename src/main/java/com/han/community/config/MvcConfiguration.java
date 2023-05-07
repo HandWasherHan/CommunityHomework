@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
@@ -27,6 +28,22 @@ public class MvcConfiguration extends WebMvcConfigurationSupport {
     @Autowired
     AdminInterceptor adminInterceptor;
 
+    @Override
+    protected void addCorsMappings(CorsRegistry registry) {
+        //设置允许跨域的路径
+        registry.addMapping ("/**")
+                //设置允许跨域请求的域名
+                .allowedOriginPatterns ("*")
+                //是否允许证书
+                .allowCredentials (true)
+                //设置允许的方法
+                .allowedMethods ("GET","POST")
+                //设置允许的header属性
+                .allowedHeaders ("*")
+                //允许跨域时间
+                .maxAge (3600);
+    }
+
     /**
      * 静态资源映射，只要继承了WebMvcConfigurationSupport并且有@Configuration注解的mvc配置类，都必须重新设置映射
      * @param registry
@@ -34,7 +51,9 @@ public class MvcConfiguration extends WebMvcConfigurationSupport {
     @Override
     protected void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/**")
-                .addResourceLocations("classpath:/static/");
+                .addResourceLocations("classpath:/static/")
+                .addResourceLocations("classpath:/templates/")
+                .addResourceLocations("classpath:/static/html/");
     }
 
     @Override
